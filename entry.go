@@ -1,8 +1,11 @@
 package contentful
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/url"
+	"strconv"
 )
 
 // EntriesService servıce
@@ -11,8 +14,8 @@ type EntriesService service
 //Entry model
 type Entry struct {
 	locale string
-	Sys    *Sys `json:"sys"`
-	Fields map[string]interface{}
+	Sys    *Sys                   `json:"sys"`
+	Fields map[string]interface{} `json:"fields"`
 }
 
 // GetVersion returns entity version
@@ -86,4 +89,36 @@ func (service *EntriesService) Get(spaceID, entryID string) (*Entry, error) {
 	}
 
 	return &entry, err
+}
+
+func (service *EntriesService) Upsert(spaceID, contentType string, entry *Entry) error {
+	bytesArray, err := json.Marshal(entry)
+	if err != nil {
+		return err
+	}
+
+	var path string
+	var method string
+
+	if entry.Sys != nil && entry.Sys.CreatedAt != "" {
+		path = fmt.Sprintf("/spaces/%s/entries/%s", spaceID, entry.Sys.ID)
+		method = "PUT"
+	} else {
+		path = fmt.Sprintf("/spaces/%s/entries", spaceID)
+		method = "POST"
+	}
+
+	req, err := service.c.newRequest(method, path, nil, bytes.NewReader(bytesArray))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("X-Contentful-Version", strconv.Itoa(entry.GetVersion()))
+	req.Header.Set("X-Contentful-Content-Type", contentType)
+
+	if err = service.c.do(req, entry); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -118,3 +118,13 @@ func (col *Collection) ToWebhook() []*Webhook {
 
 	return webhooks
 }
+
+// ToEntry cast Items to Entry model
+func (col *Collection) ToEntry() []*Entry {
+	var entries []*Entry
+
+	byteArray, _ := json.Marshal(col.Items)
+	json.NewDecoder(bytes.NewReader(byteArray)).Decode(&entries)
+
+	return entries
+}
