@@ -24,6 +24,7 @@ const (
 	FieldTypeArray    = "Array"
 	FieldTypeLink     = "Link"
 	FieldTypeInteger  = "Integer"
+	FieldTypeSymbol   = "Symbol"
 	FieldTypeLocation = "Location"
 	FieldTypeBoolean  = "Boolean"
 	FieldTypeDate     = "Date"

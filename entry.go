@@ -122,3 +122,64 @@ func (service *EntriesService) Upsert(spaceID, contentType string, entry *Entry)
 
 	return nil
 }
+
+// Activate the entry, a.k.a publish
+func (service *EntriesService) Activate(spaceID string, entry *Entry) error {
+	path := fmt.Sprintf("/spaces/%s/entries/%s/published", spaceID, entry.Sys.ID)
+	method := "PUT"
+
+	req, err := service.c.newRequest(method, path, nil, nil)
+	if err != nil {
+		return err
+	}
+
+	version := strconv.Itoa(entry.Sys.Version)
+	req.Header.Set("X-Contentful-Version", version)
+
+	if err = service.c.do(req, entry); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Deactivate the entry, a.k.a unpublish
+func (service *EntriesService) Deactivate(spaceID string, entry *Entry) error {
+	path := fmt.Sprintf("/spaces/%s/entries/%s/published", spaceID, entry.Sys.ID)
+	method := "DELETE"
+
+	req, err := service.c.newRequest(method, path, nil, nil)
+	if err != nil {
+		return err
+	}
+
+	version := strconv.Itoa(entry.Sys.Version)
+	req.Header.Set("X-Contentful-Version", version)
+
+	if err = service.c.do(req, entry); err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+// Delete the entry
+func (service *EntriesService) Delete(spaceID string, entry *Entry) error {
+	path := fmt.Sprintf("/spaces/%s/entries/%s", spaceID, entry.Sys.ID)
+	method := "DELETE"
+
+	req, err := service.c.newRequest(method, path, nil, nil)
+	if err != nil {
+		return err
+	}
+
+	version := strconv.Itoa(entry.Sys.Version)
+	req.Header.Set("X-Contentful-Version", version)
+
+	if err = service.c.do(req, nil); err != nil {
+		return err
+	}
+
+	return nil
+}
